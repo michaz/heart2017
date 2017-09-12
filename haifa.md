@@ -33,7 +33,14 @@ Given location data, one can also
 ---
 
 
-Consider sparse location data. Sparse means that not all activity locations will be witnessed, so trips will be missing. It also means that for witnessed activity locations, there will be uncertainty about their start and end time. Little can be said about modes of transport. There is even ambiguity about whether location data point is at an activity location or on a trip. An agent trying to produce behavior consistent with the data would:
+Consider sparse location data:
+
+- Not all activity locations will be witnessed, so trips will be missing.
+- Uncertainty about start and end times of witnessed activities.
+- Little to say about modes of transport.
+- Ambiguity about whether location data point is at an activity location or on a trip.
+
+An agent trying to produce behavior consistent with the data would:
 
 - Do activities at witnessed locations
 - Connect them with trips
@@ -88,20 +95,26 @@ Simulate the resulting plans. The output of this step is of the same form as the
 
 ---
 
-Calibration to traffic counts: Utility function is modified so that joint behavior of agents is directed towards fitting traffic counts.
+Calibrate against traffic counts to
 
-Use traffic counts to
 * reduce temporal uncertainty due to sparseness
 * reduce bias in daily travelled distance due to expansion heuristic
 
 Assignment of trajectory which fits the observed trace is incorporated into the agents’ behavior.
 
+note:
+
+Utility function is modified so that joint behavior of agents is directed towards fitting traffic counts.
 
 ---
 
-Consider dense location data. Dense means that activities will be more clearly delineated. It also means that many data points
-will be recognizably from trips, and will say something about speeds. An agent using the same strategy as in the sparse case
-will, compared to its real counterpart
+Consider dense location data:
+
+- Activities will be more clearly delineated
+- Many data points will recognizably be from trips
+- will say something about speeds.
+
+An agent using the same strategy as in the sparse case will, compared to its real counterpart
 
 - Do much more activities, some of them very short
 - Exhibit less reaction to feedback from the transport system: Will not change its route, even if another is faster
