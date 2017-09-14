@@ -224,6 +224,14 @@ Diagram only?
 
 ---
 
+### Next
+
+- More sophisticated algorithms (from the literature). Those in this work are very simple.
+
+- More sophisticated likelihood function. Currently binary: Possible or impossible.
+
+---
+
 ### Thank you for listening
 
 And being here for the last session.
