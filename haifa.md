@@ -188,6 +188,10 @@ Prototype activity/trip distinction:
     - Because they are likely not actual activities but waypoints
     - Reproduces real number of activities in test scenario when t is set to 10 min.
 
+- Uses travel times provided by simulation!
+
+![](prism-dense.png) <!-- .element width="70%" -->
+
 ---
 
 ### Synthetic CDRs by simulation
