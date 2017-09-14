@@ -1,110 +1,170 @@
-When building a traffic model from location data, one can either:
 
-- Build a model of travel behavior from location data, then build a traffic model from that.
-- Build a traffic model directly, then impute behavior.
+## Mobile Phone Data in MATSim
+
+##### Michael Zilske
+###### hEART 2017 Haifa
 
 ---
 
-Given location data, one can
-- Determine home/work locations
-- Determine modes of transport
-- Determine other trips
+As inputs to travel models, household surveys are expensive.
+Mobile phone data could be an alternative.
+
+![](survey.png) <!-- .element width="50%" -->
+
+---
+
+Given mobile phone data, one can e.g.
+
+- Distinguish activities/trips
+- Assign home/work locations
+- Detect mode of transport
+- Measure occupancy of facilities / vehicles
+- Model leisure traffic
+
 - Using additional data
+    - counts
     - census
     - land use
-    - time use survey
 
-The result will be something resembling a travel survey. This can then be simulated in the usual way.
+The result will be a model from which initial plans for MATSim can be drawn.
 
----
-
-
-Given location data, one can also
-
-- Look at one particular day
-- Connect the location data points of each user and construct moving agent
-- Concurrently simulate moving agents
-- Agent tries to produce behavior consistent with the evidence
-    - What the agent can do:
-        - Activities (with location, end time)
-        - Travel (with mode of transport)
-- Agent decides if its movement is feasible: Can it be at its witnessed locations in time?
+note:
+Assuming that the goal is to set up MATSim or something similar.
 
 ---
 
+### MATSim
+
+- Input:
+    - Set of agents with travel diaries as initial plans
+    - Utility parameters
+
+- Iterate:
+    - Agents concurrently execute plans on network.
+    - Agents improve utility given network conditions in
+        - activities (end time)
+        - trips (route, mode of transport)
+
+note:
+
+Fix some dimensions of the input; Mutate others, maximizing utility
+given traffic conditions.
+
+---
+
+This work: given location data, use traces directly as input
+
+![](sighting-instead-of-survey.png) <!-- .element width="50%" -->
+
+note:
+The transition from the previous picture to this one basically shows what I am going to do: I am going to more or less directly
+use location traces in place of initial plans in MATSim.
+
+---
+
+- Input:
+    - Set of agents with travel chains (connecting observations) as initial plans
+
+- Iterate
+    - Agents concurrently execute plans on network.
+    - Agents improve likelihood of observations given network conditions
+        - activities (location, end time)
+        - trips (route)
+
+note:
+Agent decides if its movement is feasible: Can it be at its witnessed locations in time?
+
+---
+
+An agent trying to produce minimal behavior consistent with location data would:
+
+- Do activities at witnessed locations
+- Connect them with trips
+
+- Pick departure times anywhere between witnessed instant and the latest required departure time to reach the next location in time
+
+---
 
 Consider sparse location data:
 
 - Not all activity locations will be witnessed, so trips will be missing.
 - Uncertainty about start and end times of witnessed activities.
-- Little to say about modes of transport.
 - Ambiguity about whether location data point is at an activity location or on a trip.
 
-An agent trying to produce behavior consistent with the data would:
+![](prism-sparse.png) <!-- .element width="70%" -->
 
-- Do activities at witnessed locations
-- Connect them with trips
-- Pick departure times anywhere between witnessed instant and the latest required departure time to reach the next location in time
-- Will get negative feedback when that doesn’t work. Try other departure times.
-
+- Truth (blue), one random realization (red)
+- Constant intervals: Activities. Trips interpolated with constant speed
+- Constraints (black) induced by measurements (tickmarks)
 
 ---
 
+Such an agent will, compared to its real counterpart
 
-Such an agent will likely, compared to its real counterpart
+- Have some activities at locations where, in reality, there was none. (But which the individual still visited while passing through.)
 - Do fewer activities
 - Travel less
-- Have some activities at locations where, in reality, there was none. (But which the individual still visited while passing through.)
 
----
-
-### Synthetic CDRs by simulation
-
-A plug-in for MATSim, our agent-oriented transport model.
-
-Input:
-Full transport scenario (simulated individuals executing all-day travel plans).
-		synthetic ground truth
-Cell coverage, which partitions the simulated geographic area into mobile phone cells.
-Mobile phone usage model.
-Each agent can decide in every time step whether or not to place a call
-Allows investigating non-homogeneous calling behavior
-Output:
-Synthetic CDR data set.
-Any aggregate data which can be taken from the scenario. In particular: link counts.
-
-We consider this the available data for demand modeling. We can now study in isolation the question of how much information is lost for the simulation model if we replace travel diaries by CDRs.
-
-
----
-
-
-### Create a demand model from CDRs
-
-Convert CDR trajectories back to travel diaries:
-
-- Create one individual for each observed caller id
-- Convert each call into an activity
-- Fuse calls in the same zone with no call in another zone in between
-- Choose location randomly within zone
-- Choose activity end time arbitrarily so that the location of the next call is reached
-- Possibly insert additional locations for which there is no evidence by calls
-
-Simulate the resulting plans. The output of this step is of the same form as the base case. The two scenarios can now be compared to assess the approximation quality.
-
-
----
-
-Calibrate against traffic counts to
-
-* reduce temporal uncertainty due to sparseness
-* reduce bias in daily travelled distance due to expansion heuristic
-
-Assignment of trajectory which fits the observed trace is incorporated into the agents’ behavior.
+![](too-little-traffic.png) <!-- .element width="50%" -->
 
 note:
+Note that even with a high average call rate of 50 calls per day, the approach still misses about 10% of traffic. Thus, in order
+to make this procedure practically useful, some compensation method needs to be devised.
+The most available method of compensating for something is Cadyts.
 
-Utility function is modified so that joint behavior of agents is directed towards fitting traffic counts.
+---
+
+### Cadyts
+
+- Add scoring term which fits population behavior to traffic counts
+    - Prefer plans which use links where simulated flow is smaller than observed flow
+
+- Has been used with variable (uncertain) population size.
+    - Agent can choose to not exist
+
+---
+
+### Cadyts 2
+
+- Now: Use traffic counts to
+
+    - reduce temporal uncertainty
+    - reduce bias towards minimal activity
+
+- Problem: Replanning must produce plans with enough variability in all
+relevant dimensions. Here: Number of activities, which are now near the lower bound.
+
+- Idea: Use *denser* traces as templates to expand sparse traces.
+
+---
+
+![](similarity.png) <!-- .element width="30%" -->
+
+A dense trace (red) and a sparse trace (black). Projection: Distance from first location.
+Both traces could result from similar underlying behavior.
+
+note:
+If we only simulated movement for which we have direct evidence from observations,
+the travelled distance of black would be underestimated.
+
+---
+
+|   |   |
+|---|---|
+| ![](enrichment/lo.png)<!-- .element width="50%" --> | ![](enrichment/ro.png)<!-- .element width="50%" --> |
+| ![](enrichment/lu.png)<!-- .element width="50%" --> | ![](enrichment/ru.png)<!-- .element width="50%" --> |
+
+- Add new points to the sparse trace which correspond to sightings of the dense trace
+- Randomly draw locations for these points by a geometric construction such that trip lengths correspond to those
+of the dense trace
+
+
+---
+
+![](travel-distance-histogram.png)<!-- .element width="50%" -->
+
+- All-day travel distance distribution over individuals.
+- Distorted, but improved once calibrated against hourly link counts.
 
 ---
 
@@ -114,16 +174,45 @@ Consider dense location data:
 - Many data points will recognizably be from trips
 - will say something about speeds.
 
-An agent using the same strategy as in the sparse case will, compared to its real counterpart
+![](prism-dense.png) <!-- .element width="70%" -->
 
-- Do much more activities, some of them very short
+Using the same strategy as in the sparse case will
+
+- Produce many more activities, some of them very short
 - Exhibit less reaction to feedback from the transport system: Will not change its route, even if another is faster
 
 ---
 
+### Synthetic CDRs by simulation
 
-### Contribution
+Input:
+- Full transport scenario (simulated individuals executing all-day travel plans): Synthetic ground truth
+- Cell coverage, which partitions the simulated geographic area into mobile phone cells.
+- Mobile phone usage model.
+    - Each agent can decide in every time step whether or not to place a call
+    - Allows investigating non-homogeneous calling behavior
 
-Problem of fusing CDRs and link counts reformulated as calibrating agent behavior within a well-studied simulation framework.
+Output:
+- Synthetic CDR data set.
+- Any aggregate data which can be taken from the scenario. In particular: link counts.
 
-Software framework to develop and evaluate methods to reconstruct agent-based scenarios from CDRs.
+Consider this the available data for demand modeling. We can now study in isolation the question of how much information is lost
+for the simulation model if we replace travel diaries by CDRs.
+
+---
+
+### Conclusion
+
+When using location data with MATSim, one can either
+
+- Build a population model from location data, construct initial demand from that, simulate (with counts as side input).
+- Or (this work): Build trip chains, simulate flows directly (with counts as side input), then impute behavior.
+- Agent oriented simulations are natural algorithm testbeds
+    - Produce *synthetic* phone data
+    - Use algorithms for activity/trip/mode/occupancy detection
+    - Compare to base case as ground truth
+
+note:
+Diagram only?
+
+---
