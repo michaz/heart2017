@@ -67,7 +67,7 @@ use location traces in place of initial plans in MATSim.
 
 - Iterate
     - Agents concurrently execute plans on network.
-    - Agents improve likelihood of observations given network conditions
+    - Agents improve likelihood of plan given observations, network conditions
         - activities (location, end time)
         - trips (route)
 
@@ -124,7 +124,7 @@ The most available method of compensating for something is Cadyts.
 
 ---
 
-### Cadyts 2
+### Cadyts
 
 - Now: Use traffic counts to
 
@@ -154,8 +154,8 @@ the travelled distance of black would be underestimated.
 | ![](enrichment/lo.png)<!-- .element width="50%" --> | ![](enrichment/ro.png)<!-- .element width="50%" --> |
 | ![](enrichment/lu.png)<!-- .element width="50%" --> | ![](enrichment/ru.png)<!-- .element width="50%" --> |
 
-- Add new points to the sparse trace which correspond to sightings of the dense trace
-- Randomly draw locations for these points by a geometric construction such that trip lengths correspond to those
+- Add new points to the sparse trace which correspond to points of the dense trace
+- Randomize locations of these points by a geometric construction such that trip lengths correspond to those
 of the dense trace
 
 
@@ -172,7 +172,6 @@ Consider dense location data:
 
 - Activities will be more clearly delineated
 - Many data points will recognizably be from trips
-- will say something about speeds.
 
 ![](prism-dense.png) <!-- .element width="70%" -->
 
@@ -180,6 +179,14 @@ Using the same strategy as in the sparse case will
 
 - Produce many more activities, some of them very short
 - Exhibit less reaction to feedback from the transport system: Will not change its route, even if another is faster
+
+---
+
+Prototype activity/trip distinction:
+
+- Remove activities where there is little slack (t) in choosing end time
+    - Because they are likely not actual activities but waypoints
+    - Reproduces real number of activities in test scenario when t is set to 10 min.
 
 ---
 
@@ -194,10 +201,7 @@ Input:
 
 Output:
 - Synthetic CDR data set.
-- Any aggregate data which can be taken from the scenario. In particular: link counts.
-
-Consider this the available data for demand modeling. We can now study in isolation the question of how much information is lost
-for the simulation model if we replace travel diaries by CDRs.
+- Anything which can be skimmed from the simulation. In particular: link counts.
 
 ---
 
@@ -206,13 +210,22 @@ for the simulation model if we replace travel diaries by CDRs.
 When using location data with MATSim, one can either
 
 - Build a population model from location data, construct initial demand from that, simulate (with counts as side input).
+
 - Or (this work): Build trip chains, simulate flows directly (with counts as side input), then impute behavior.
+
 - Agent oriented simulations are natural algorithm testbeds
+    - Start with a well-studied base case
     - Produce *synthetic* phone data
-    - Use algorithms for activity/trip/mode/occupancy detection
+    - Try algorithms for activity/trip/mode/occupancy detection
     - Compare to base case as ground truth
 
 note:
 Diagram only?
 
 ---
+
+### Thank you for listening
+
+And being here for the last session.
+
+michael.zilske@tu-berlin.de
